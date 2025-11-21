@@ -1,0 +1,27 @@
+[
+  {
+    "topic": "AI taking over jobs",
+    "context": "Recent reports show 27% of repetitive roles were automated in the last year. McKinsey study indicates that by 2030, up to 30% of hours worked globally could be automated."
+  },
+  {
+    "topic": "mental health in the workplace",
+    "context": "WHO reports 25% increase in anxiety and depression since 2020. Companies investing heavily in wellness programs.",
+    "sponsor": "Calm"
+  },
+  {
+    "topic": "the future of remote work",
+    "context": "74% of workers prefer hybrid models. Productivity up 13% but collaboration concerns persist."
+  },
+  {
+    "topic": "cryptocurrency and regulation",
+    "context": "Bitcoin volatility continues with 40% price swings. EU implements MiCA regulations while US remains fragmented.",
+    "sponsor": "Skyflow"
+  },
+  {
+    "topic": "fitness and technology integration",
+    "context": "Wearable fitness tech market reaches $60B. 78% of gym-goers now use apps to track workouts.",
+    "sponsor": "Nike"
+  }
+]
+
+

@@ -1,0 +1,31 @@
+# Quick Reference: Valid Test URLs
+
+## Always Works (Simple HTML)
+https://news.ycombinator.com/
+https://dev.to/
+
+## JavaScript-Heavy (Test JS Rendering)
+https://www.technologyreview.com/
+https://techcrunch.com/
+https://www.theverge.com/
+https://arstechnica.com/
+https://www.bbc.com/news/technology
+https://www.reuters.com/technology/
+
+## Topic: AI Agents 2024
+https://www.technologyreview.com/topic/artificial-intelligence/
+https://www.theverge.com/ai-artificial-intelligence
+https://venturebeat.com/ai/
+
+## Topic: Remote Work
+https://www.flexjobs.com/blog/post/remote-work-statistics/
+https://buffer.com/resources/remote-work/
+https://zapier.com/blog/remote-work/
+
+## Topic: Cybersecurity
+https://www.wired.com/story/security/
+https://arstechnica.com/information-technology/
+
+## Research/Academic
+https://www.nature.com/subjects/computer-science
+https://www.pewresearch.org/topic/internet-technology/

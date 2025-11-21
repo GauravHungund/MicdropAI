@@ -1,0 +1,117 @@
+{
+  "test_urls": {
+    "technology": {
+      "description": "Technology and AI news sites",
+      "urls": [
+        "https://www.technologyreview.com/",
+        "https://techcrunch.com/",
+        "https://www.theverge.com/",
+        "https://arstechnica.com/",
+        "https://www.wired.com/story/",
+        "https://www.engadget.com/"
+      ]
+    },
+    "ai_machine_learning": {
+      "description": "AI and Machine Learning focused",
+      "urls": [
+        "https://www.technologyreview.com/topic/artificial-intelligence/",
+        "https://www.theverge.com/ai-artificial-intelligence",
+        "https://venturebeat.com/ai/",
+        "https://openai.com/blog",
+        "https://www.anthropic.com/index/news"
+      ]
+    },
+    "business": {
+      "description": "Business and economics",
+      "urls": [
+        "https://www.bloomberg.com/technology",
+        "https://www.economist.com/technology-quarterly",
+        "https://hbr.org/topic/technology",
+        "https://www.forbes.com/innovation/",
+        "https://www.ft.com/technology"
+      ]
+    },
+    "research_academic": {
+      "description": "Research and academic publications",
+      "urls": [
+        "https://www.nature.com/subjects/computer-science",
+        "https://www.science.org/topic/technology",
+        "https://arxiv.org/list/cs.AI/recent",
+        "https://www.pewresearch.org/topic/internet-technology/"
+      ]
+    },
+    "news": {
+      "description": "General news sites",
+      "urls": [
+        "https://www.bbc.com/news/technology",
+        "https://www.reuters.com/technology/",
+        "https://www.cnn.com/business/tech",
+        "https://www.theguardian.com/technology"
+      ]
+    },
+    "developer": {
+      "description": "Developer-focused sites",
+      "urls": [
+        "https://news.ycombinator.com/",
+        "https://dev.to/",
+        "https://stackoverflow.blog/",
+        "https://github.com/trending"
+      ]
+    },
+    "productivity": {
+      "description": "Productivity and remote work",
+      "urls": [
+        "https://www.flexjobs.com/blog/post/remote-work-statistics/",
+        "https://buffer.com/resources/remote-work/",
+        "https://zapier.com/blog/remote-work/",
+        "https://www.gartner.com/en/articles/remote-work"
+      ]
+    },
+    "health_wellness": {
+      "description": "Health and wellness",
+      "urls": [
+        "https://www.mayoclinic.org/healthy-lifestyle",
+        "https://www.healthline.com/health/mental-health",
+        "https://www.webmd.com/mental-health/default.htm"
+      ]
+    }
+  },
+  "verified_working": [
+    "https://news.ycombinator.com/",
+    "https://www.technologyreview.com/",
+    "https://techcrunch.com/",
+    "https://www.theverge.com/",
+    "https://www.bbc.com/news/technology",
+    "https://www.reuters.com/technology/",
+    "https://arstechnica.com/",
+    "https://dev.to/"
+  ],
+  "podcast_topic_examples": {
+    "ai_agents_2024": [
+      "https://www.technologyreview.com/topic/artificial-intelligence/",
+      "https://www.theverge.com/ai-artificial-intelligence",
+      "https://venturebeat.com/ai/"
+    ],
+    "remote_work_productivity": [
+      "https://www.flexjobs.com/blog/post/remote-work-statistics/",
+      "https://buffer.com/resources/remote-work/",
+      "https://zapier.com/blog/remote-work/"
+    ],
+    "cybersecurity_2024": [
+      "https://www.wired.com/story/security/",
+      "https://arstechnica.com/information-technology/",
+      "https://www.technologyreview.com/topic/security/"
+    ],
+    "climate_technology": [
+      "https://www.technologyreview.com/topic/climate-change/",
+      "https://www.theguardian.com/environment/climate-crisis",
+      "https://www.nature.com/subjects/climate-change"
+    ],
+    "mental_health_tech": [
+      "https://www.healthline.com/health/mental-health",
+      "https://www.webmd.com/mental-health/default.htm",
+      "https://www.mayoclinic.org/healthy-lifestyle/stress-management"
+    ]
+  }
+}
+
