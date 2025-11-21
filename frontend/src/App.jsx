@@ -6,6 +6,8 @@ import PodcastPlayer from './components/PodcastPlayer';
 function App() {
   const playerRef = useRef(null);
   const [theme, setTheme] = useState('light');
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [isPlaying, setIsPlaying] = useState(false);
 
   useEffect(() => {
     if (theme === 'dark') {
@@ -20,19 +22,27 @@ function App() {
   };
 
   const handleGenerate = () => {
-    // Small delay to allow for any immediate state updates or animations to start
+    setIsGenerating(true);
+
+    // Simulate podcast generation (2 seconds)
     setTimeout(() => {
-      playerRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    }, 100);
+      setIsGenerating(false);
+      setIsPlaying(true);
+
+      // Scroll to player after generation
+      setTimeout(() => {
+        playerRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }, 100);
+    }, 2000);
   };
 
   return (
     <div className="app-container">
       <Header theme={theme} toggleTheme={toggleTheme} />
       <main>
-        <PromptInput onGenerate={handleGenerate} />
+        <PromptInput onGenerate={handleGenerate} isGenerating={isGenerating} isPlaying={isPlaying} />
         <div ref={playerRef} className="w-full flex justify-center">
-          <PodcastPlayer />
+          <PodcastPlayer isGenerating={isGenerating} isPlaying={isPlaying} />
         </div>
       </main>
     </div>
