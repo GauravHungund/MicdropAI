@@ -1,7 +1,14 @@
 import React from 'react';
-import { FaMicrophone, FaHome, FaHistory, FaCog, FaMoon, FaSun } from 'react-icons/fa';
+import { FaMicrophone, FaHome, FaInfoCircle, FaCog, FaMoon, FaSun } from 'react-icons/fa';
 
 const Header = ({ theme, toggleTheme, onHomeClick }) => {
+    const scrollToAbout = () => {
+        const aboutSection = document.getElementById('about');
+        if (aboutSection) {
+            aboutSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+    };
+
     return (
         <header className="w-full flex justify-between items-center px-lg py-md bg-transparent absolute top-0 z-50">
             <div className="flex items-center gap-sm font-display text-2xl font-bold text-text">
@@ -15,9 +22,12 @@ const Header = ({ theme, toggleTheme, onHomeClick }) => {
                     <FaHome />
                     <span>Home</span>
                 </button>
-                <button className="bg-transparent border-none text-text-muted text-base ml-md transition-colors hover:text-text font-light flex items-center gap-xs">
-                    <FaHistory />
-                    <span>History</span>
+                <button
+                    onClick={scrollToAbout}
+                    className="bg-transparent border-none text-text-muted text-base ml-md transition-colors hover:text-text font-light flex items-center gap-xs"
+                >
+                    <FaInfoCircle />
+                    <span>About</span>
                 </button>
                 <button className="bg-transparent border-none text-text-muted text-base ml-md transition-colors hover:text-text font-light flex items-center gap-xs">
                     <FaCog />

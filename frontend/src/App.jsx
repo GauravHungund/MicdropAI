@@ -2,6 +2,7 @@ import React, { useRef, useState, useEffect } from 'react';
 import Header from './components/Header';
 import PromptInput from './components/PromptInput';
 import PodcastPlayer from './components/PodcastPlayer';
+import About from './components/About';
 
 function App() {
   const playerRef = useRef(null);
@@ -51,6 +52,7 @@ function App() {
         <div ref={playerRef} className="w-full flex justify-center">
           <PodcastPlayer isGenerating={isGenerating} isPlaying={isPlaying} />
         </div>
+        <About />
       </main>
     </div>
   );
