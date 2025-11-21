@@ -21,6 +21,13 @@ function App() {
     setTheme(prev => prev === 'light' ? 'dark' : 'light');
   };
 
+  const handleHome = () => {
+    setIsGenerating(false);
+    setIsPlaying(false);
+    // Scroll to top smoothly
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
   const handleGenerate = () => {
     setIsGenerating(true);
 
@@ -38,7 +45,7 @@ function App() {
 
   return (
     <div className="app-container">
-      <Header theme={theme} toggleTheme={toggleTheme} />
+      <Header theme={theme} toggleTheme={toggleTheme} onHomeClick={handleHome} />
       <main>
         <PromptInput onGenerate={handleGenerate} isGenerating={isGenerating} isPlaying={isPlaying} />
         <div ref={playerRef} className="w-full flex justify-center">

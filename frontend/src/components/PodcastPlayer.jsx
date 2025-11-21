@@ -1,5 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
+import { FaPlay } from 'react-icons/fa';
 
 const PodcastPlayer = ({ isGenerating, isPlaying }) => {
     // Dummy transcript data
@@ -94,8 +95,8 @@ const PodcastPlayer = ({ isGenerating, isPlaying }) => {
                 transition={{ delay: 0.5, duration: 0.8 }}
                 className="flex gap-md items-center"
             >
-                <button className="w-[60px] h-[60px] rounded-full bg-primary text-white border-none text-3xl flex items-center justify-center shadow-lg hover:scale-110 transition-transform">
-                    ▶
+                <button className="w-[60px] h-[60px] rounded-full bg-primary text-white border-none text-2xl flex items-center justify-center shadow-lg hover:scale-110 transition-transform">
+                    <FaPlay />
                 </button>
             </motion.div>
         </motion.div>
