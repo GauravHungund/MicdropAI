@@ -85,9 +85,15 @@ class SanityClient:
             "conversation": episode_data.get('conversation', ''),
             "sponsor": episode_data.get('sponsor', ''),
             "contextUsed": episode_data.get('context_used', '')[:500] if episode_data.get('context_used') else '',
+            "contextSummarized": episode_data.get('context_used', ''),  # Full summarized context
             "generatedAt": datetime.now().isoformat(),
             "hostAlex": "Curious, reflective, empathetic",
-            "hostMaya": "Analytical, grounded, insightful"
+            "hostMaya": "Analytical, grounded, insightful",
+            "previousScript": episode_data.get('previous_script', ''),
+            "isContinuation": episode_data.get('is_continuation', False),
+            "sequenceIndex": episode_data.get('sequence_index'),
+            "sequenceId": episode_data.get('sequence_id', ''),
+            "tags": episode_data.get('tags', [])
         }
         
         # Add sources if available
@@ -98,9 +104,22 @@ class SanityClient:
                 for s in sources[:10]  # Limit to 10 sources
             ]
         
-        # Add scraped data summary if available
-        scraped_data = episode_data.get('scraped_data', {})
-        if scraped_data:
+        # Store raw scraped content
+        scraped_data = episode_data.get('scraped_data', [])
+        if isinstance(scraped_data, list) and scraped_data:
+            # Store full scraped content as array of objects
+            episode_doc["scrapedContent"] = [
+                {
+                    "source": item.get('source', ''),
+                    "url": item.get('url', ''),
+                    "content": item.get('content', ''),
+                    "method": item.get('method', 'unknown')
+                }
+                for item in scraped_data[:10]  # Limit to 10 sources
+            ]
+            episode_doc["scrapedSourcesCount"] = len(scraped_data)
+        elif isinstance(scraped_data, dict):
+            # Legacy format support
             episode_doc["scrapedSourcesCount"] = len(scraped_data.get('scraped', []))
             episode_doc["scrapingMethod"] = scraped_data.get('method', 'unknown')
         
@@ -292,6 +311,149 @@ class SanityClient:
         except Exception as e:
             print(f"❌ Error searching Sanity: {e}")
             return []
+    
+    def get_episode_by_topic(self, topic: str) -> Optional[Dict]:
+        """
+        Get the most recent episode for a given topic.
+        Useful for reusing existing context.
+        
+        Args:
+            topic: Topic to search for
+            
+        Returns:
+            Episode document if found, None otherwise
+        """
+        if not self.enabled:
+            return None
+        
+        # Search for episodes with similar topic
+        query = f'*[_type == "episode" && topic match "{topic}*"] | order(generatedAt desc) [0]'
+        
+        url = f"{self.base_url}/data/query/{self.dataset}"
+        headers = {
+            "Authorization": f"Bearer {self.api_token}"
+        }
+        params = {"query": query}
+        
+        try:
+            response = requests.get(url, headers=headers, params=params, timeout=10)
+            response.raise_for_status()
+            result = response.json()
+            episodes = result.get("result", [])
+            return episodes[0] if episodes else None
+        except Exception as e:
+            print(f"❌ Error querying episode by topic: {e}")
+            return None
+    
+    def get_context_for_topic(self, topic: str) -> Optional[str]:
+        """
+        Get summarized context for a topic if it exists in Sanity.
+        Combines existing context with new context.
+        
+        Args:
+            topic: Topic to search for
+            
+        Returns:
+            Summarized context string if found, None otherwise
+        """
+        episode = self.get_episode_by_topic(topic)
+        if episode:
+            return episode.get('contextSummarized') or episode.get('contextUsed', '')
+        return None
+    
+    def get_episodes_by_sequence(self, sequence_id: str) -> List[Dict]:
+        """
+        Get all episodes in a sequence.
+        
+        Args:
+            sequence_id: Sequence identifier
+            
+        Returns:
+            List of episode documents in the sequence
+        """
+        if not self.enabled:
+            return []
+        
+        query = f'*[_type == "episode" && sequenceId == "{sequence_id}"] | order(sequenceIndex asc)'
+        
+        url = f"{self.base_url}/data/query/{self.dataset}"
+        headers = {
+            "Authorization": f"Bearer {self.api_token}"
+        }
+        params = {"query": query}
+        
+        try:
+            response = requests.get(url, headers=headers, params=params, timeout=10)
+            response.raise_for_status()
+            result = response.json()
+            return result.get("result", [])
+        except Exception as e:
+            print(f"❌ Error querying episodes by sequence: {e}")
+            return []
+    
+    def get_episodes_by_tags(self, tags: List[str], limit: int = 10) -> List[Dict]:
+        """
+        Get episodes that match any of the provided tags.
+        
+        Args:
+            tags: List of tags to search for
+            limit: Maximum number of episodes to return
+            
+        Returns:
+            List of episode documents matching the tags
+        """
+        if not self.enabled or not tags:
+            return []
+        
+        # Build query to match any tag
+        tag_conditions = ' || '.join([f'"{tag}" in tags' for tag in tags])
+        query = f'*[_type == "episode" && ({tag_conditions})] | order(generatedAt desc) [0...{limit}]'
+        
+        url = f"{self.base_url}/data/query/{self.dataset}"
+        headers = {
+            "Authorization": f"Bearer {self.api_token}"
+        }
+        params = {"query": query}
+        
+        try:
+            response = requests.get(url, headers=headers, params=params, timeout=10)
+            response.raise_for_status()
+            result = response.json()
+            return result.get("result", [])
+        except Exception as e:
+            print(f"❌ Error querying episodes by tags: {e}")
+            return []
+    
+    def get_scraped_data_by_tags(self, tags: List[str], limit: int = 5) -> List[Dict]:
+        """
+        Get scraped content from episodes matching the tags.
+        Useful for reusing previously scraped data.
+        
+        Args:
+            tags: List of tags to search for
+            limit: Maximum number of episodes to retrieve
+            
+        Returns:
+            List of scraped content dictionaries with source, url, content, method
+        """
+        episodes = self.get_episodes_by_tags(tags, limit)
+        scraped_data = []
+        
+        for episode in episodes:
+            scraped_content = episode.get('scrapedContent', [])
+            if isinstance(scraped_content, list):
+                for item in scraped_content:
+                    if isinstance(item, dict) and item.get('content'):
+                        scraped_data.append({
+                            'source': item.get('source', ''),
+                            'url': item.get('url', ''),
+                            'content': item.get('content', ''),
+                            'method': item.get('method', 'unknown'),
+                            'episode_topic': episode.get('topic', ''),
+                            'episode_id': episode.get('_id', '')
+                        })
+        
+        return scraped_data
 
 
 def test_sanity_connection():

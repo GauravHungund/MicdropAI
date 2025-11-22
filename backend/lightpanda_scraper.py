@@ -19,11 +19,10 @@ class LightpandaScraper:
         }
         
         if self.use_lightpanda:
-            print("🌐 Lightpanda API: ENABLED")
-            from lightpanda_client import LightpandaClient
-            self.lightpanda = LightpandaClient(self.api_key)
-        else:
-            print("⚠️  Lightpanda API: DISABLED (using BeautifulSoup fallback)")
+            # Lightpanda is handled via smart_scraper now
+            # This class uses fallback scraping
+            # Don't show warning - this is expected behavior
+            self.use_lightpanda = False
     
     def search_google(self, query: str, num_results: int = 3) -> List[str]:
         """
@@ -71,34 +70,9 @@ class LightpandaScraper:
     
     def _get_context_lightpanda(self, topic: str) -> str:
         """Get context using Lightpanda API."""
-        try:
-            print(f"🔍 Lightpanda: Searching for '{topic}'...")
-            
-            # Use Lightpanda's search and scrape
-            result = self.lightpanda.search_and_scrape(topic, num_results=3)
-            
-            if result.get("status") == "failed" or not result.get("results"):
-                print("⚠️  Lightpanda search failed, using fallback...")
-                return self._generate_fallback_context(topic)
-            
-            contexts = []
-            for item in result.get("results", [])[:3]:
-                if item.get("content"):
-                    # Extract relevant text (first 500 chars)
-                    content = item["content"][:500]
-                    contexts.append(content)
-            
-            if contexts:
-                print(f"✅ Lightpanda: Retrieved {len(contexts)} sources")
-                return " | ".join(contexts)
-            else:
-                print("⚠️  No content extracted, using fallback...")
-                return self._generate_fallback_context(topic)
-                
-        except Exception as e:
-            print(f"❌ Lightpanda error: {e}")
-            print("⚠️  Falling back to synthetic context...")
-            return self._generate_fallback_context(topic)
+        # This method is deprecated - Lightpanda is handled via smart_scraper
+        # Fall back to BeautifulSoup scraping
+        return self._get_context_fallback(topic)
     
     def _get_context_fallback(self, topic: str) -> str:
         """Get context using BeautifulSoup fallback."""

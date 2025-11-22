@@ -1,7 +1,8 @@
 """Intelligent scraping: Claude selects targets → Lightpanda fetches data."""
 from typing import List, Dict, Optional
 from claude_client import ClaudeClient
-from lightpanda_client import LightpandaClient
+# Lightpanda is handled via lightpanda_playwright_client now
+from lightpanda_playwright_client import LightpandaPlaywrightClient as LightpandaClient
 from lightpanda_playwright_client import scrape_with_lightpanda_playwright
 from playwright_scraper import scrape_with_playwright
 from config import LIGHTPANDA_API_KEY
@@ -18,8 +19,8 @@ class SmartScraper:
     def __init__(self):
         self.claude = ClaudeClient()
         self.use_lightpanda = bool(LIGHTPANDA_API_KEY)
-        if self.use_lightpanda:
-            self.lightpanda = LightpandaClient()
+        # Note: Lightpanda is used via scrape_with_lightpanda_playwright function
+        # No need to instantiate a client here
     
     def get_intelligent_context(self, topic: str, max_sources: int = 3) -> Dict:
         """
@@ -159,29 +160,29 @@ Return ONLY the JSON array, nothing else."""
     
     def _scrape_targets(self, targets: List[Dict]) -> List[Dict]:
         """
-        Phase 2: Hybrid scraping strategy:
-        1. Try Lightpanda Cloud (WebSocket) - uses your API key
-        2. Fallback to Playwright Chrome - local JavaScript rendering
-        3. Fallback to direct HTTP - simple scraping
+        Phase 2: Scrape each target once - try best method, if fails move on.
+        Priority: Lightpanda Cloud > Playwright > HTTP
         """
         scraped = []
         
         for i, target in enumerate(targets, 1):
             print(f"\n   [{i}/{len(targets)}] Scraping {target['source_name']}...")
             
-            try:
-                # PRIORITY 1: Try Lightpanda Cloud via Playwright CDP (if API key available)
-                if LIGHTPANDA_API_KEY:
-                    print(f"      → Trying Lightpanda Cloud via Playwright CDP (your API key)...")
+            success = False
+            
+            # Try Lightpanda Cloud first (if API key available)
+            if LIGHTPANDA_API_KEY and not success:
+                try:
+                    print(f"      → Trying Lightpanda Cloud...")
                     result = scrape_with_lightpanda_playwright(
                         url=target['url'],
                         api_token=LIGHTPANDA_API_KEY,
-                        region="eu"  # Try EU first, can make configurable
+                        region="eu"
                     )
                     
                     if result.get('status') == 'success' and result.get('content'):
                         content = result.get('content', '')
-                        if len(content) > 100:  # Valid content
+                        if len(content) > 100:
                             scraped.append({
                                 'source': target['source_name'],
                                 'url': target['url'],
@@ -189,54 +190,41 @@ Return ONLY the JSON array, nothing else."""
                                 'status': 'success',
                                 'method': 'lightpanda_cloud_cdp'
                             })
-                            print(f"      ✅ Lightpanda Cloud (CDP): Retrieved {len(content):,} characters")
+                            print(f"      ✅ Retrieved {len(content):,} characters")
+                            success = True
                             continue
-                    else:
-                        error_msg = result.get('error', 'Unknown error')
-                        print(f"      ⚠️  Lightpanda Cloud failed: {error_msg[:60]}")
-                
-                # PRIORITY 2: Fallback to Playwright Chrome (local, free)
-                print(f"      → Trying Playwright Chrome (local JavaScript rendering)...")
-                result = scrape_with_playwright(
-                    url=target['url'],
-                    wait_time=5.0  # Increased wait time for JS-heavy sites
-                )
-                
-                if result.get('status') == 'success' and result.get('content'):
-                    content = result.get('content', '')
-                    if len(content) > 100:
-                        scraped.append({
-                            'source': target['source_name'],
-                            'url': target['url'],
-                            'content': content[:2000],
-                            'status': 'success',
-                            'method': 'playwright_chrome'
-                        })
-                        print(f"      ✅ Playwright Chrome: Retrieved {len(content):,} characters")
-                        continue
-                else:
-                    error_msg = result.get('error', 'Unknown error')
-                    print(f"      ⚠️  Playwright failed: {error_msg[:60]}")
-                
-                # PRIORITY 3: Fallback to direct HTTP scraping (no JavaScript)
-                print(f"      → Trying direct HTTP (no JavaScript)...")
-                scraped_content = self._direct_scrape(target['url'])
-                if scraped_content and len(scraped_content) > 100:
-                    scraped.append({
-                        'source': target['source_name'],
-                        'url': target['url'],
-                        'content': scraped_content[:2000],
-                        'status': 'success',
-                        'method': 'http'
-                    })
-                    print(f"      ✅ HTTP: Retrieved {len(scraped_content)} characters")
-                else:
-                    print(f"      ❌ All methods failed")
-                    
-            except Exception as e:
-                print(f"      ❌ Error: {e}")
-                # Try direct scraping as final fallback
+                except Exception as e:
+                    print(f"      ⚠️  Lightpanda failed: {str(e)[:60]}")
+            
+            # Try Playwright if Lightpanda failed
+            if not success:
                 try:
+                    print(f"      → Trying Playwright Chrome...")
+                    result = scrape_with_playwright(
+                        url=target['url'],
+                        wait_time=5.0
+                    )
+                    
+                    if result.get('status') == 'success' and result.get('content'):
+                        content = result.get('content', '')
+                        if len(content) > 100:
+                            scraped.append({
+                                'source': target['source_name'],
+                                'url': target['url'],
+                                'content': content[:2000],
+                                'status': 'success',
+                                'method': 'playwright_chrome'
+                            })
+                            print(f"      ✅ Retrieved {len(content):,} characters")
+                            success = True
+                            continue
+                except Exception as e:
+                    print(f"      ⚠️  Playwright failed: {str(e)[:60]}")
+            
+            # Try HTTP as last resort
+            if not success:
+                try:
+                    print(f"      → Trying direct HTTP...")
                     scraped_content = self._direct_scrape(target['url'])
                     if scraped_content and len(scraped_content) > 100:
                         scraped.append({
@@ -244,11 +232,15 @@ Return ONLY the JSON array, nothing else."""
                             'url': target['url'],
                             'content': scraped_content[:2000],
                             'status': 'success',
-                            'method': 'http_fallback'
+                            'method': 'http'
                         })
-                        print(f"      ✅ Fallback HTTP: Retrieved {len(scraped_content)} characters")
-                except:
-                    pass
+                        print(f"      ✅ Retrieved {len(scraped_content)} characters")
+                        success = True
+                except Exception as e:
+                    print(f"      ⚠️  HTTP failed: {str(e)[:60]}")
+            
+            if not success:
+                print(f"      ❌ All methods failed, moving on...")
         
         return scraped
     

@@ -44,3 +44,10 @@ SANITY_DATASET = os.getenv('SANITY_DATASET', 'production')
 SANITY_API_TOKEN = os.getenv('SANITY_API_TOKEN')
 SANITY_SAVE_EPISODES = os.getenv('SANITY_SAVE_EPISODES', 'true').lower() == 'true'
 
+# ElevenLabs API Configuration
+ELEVENLABS_API_KEY = os.getenv('ELEVENLABS_API_KEY')
+ELEVENLABS_VOICE_ID_ALEX = os.getenv('ELEVENLABS_VOICE_ID_ALEX', 'default')
+ELEVENLABS_VOICE_ID_MAYA = os.getenv('ELEVENLABS_VOICE_ID_MAYA', 'default')
+ELEVENLABS_API_URL = "https://api.elevenlabs.io/v1/text-to-speech"
+ELEVENLABS_MODEL_ID = os.getenv('ELEVENLABS_MODEL_ID', 'eleven_turbo_v2')  # Free-tier compatible
+

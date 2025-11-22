@@ -6,12 +6,58 @@ const PromptInput = ({ onGenerate, isGenerating, isPlaying }) => {
   const [sponsorsPrompt, setSponsorsPrompt] = useState('');
   const [myTopicsPrompt, setMyTopicsPrompt] = useState('');
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!sponsorsPrompt.trim() && !myTopicsPrompt.trim()) return;
-    console.log('Generating podcast - Sponsors:', sponsorsPrompt, 'My Topics:', myTopicsPrompt);
-    if (onGenerate) onGenerate();
-    // TODO: Connect to backend with both prompts
+    
+    // Validate input - at least one field must have content
+    if (!sponsorsPrompt.trim() && !myTopicsPrompt.trim()) {
+      alert('Please enter at least a topic or sponsor information');
+      return;
+    }
+    
+    if (isGenerating) {
+      console.log('⏳ Already generating, please wait...');
+      return;
+    }
+    
+    // Parse topics and sponsors as arrays (split by newlines or commas)
+    const parseList = (text) => {
+      return text
+        .split(/[,\n]/)
+        .map(item => item.trim())
+        .filter(item => item.length > 0);
+    };
+    
+    const topics = parseList(myTopicsPrompt);
+    const sponsors = parseList(sponsorsPrompt);
+    
+    // Validate we have at least one topic
+    if (topics.length === 0 && sponsors.length === 0) {
+      alert('Please enter at least one topic or sponsor');
+      return;
+    }
+    
+    // If no topics but sponsors, use sponsors as topics
+    const finalTopics = topics.length > 0 ? topics : sponsors;
+    const finalSponsors = topics.length > 0 ? sponsors : [];
+    
+    console.log('📝 Form submitted - Topics:', finalTopics, 'Sponsors:', finalSponsors);
+    
+    if (onGenerate) {
+      try {
+        // Pass arrays to the parent component's handler
+        await onGenerate(finalTopics, finalSponsors);
+        // Clear the inputs after successful submission
+        setMyTopicsPrompt('');
+        setSponsorsPrompt('');
+      } catch (error) {
+        console.error('❌ Error in handleSubmit:', error);
+        // Error handling is done in App.jsx
+      }
+    } else {
+      console.error('❌ onGenerate handler not provided');
+      alert('Error: Generate handler not available');
+    }
   };
 
   // Don't render if generating or playing
@@ -79,7 +125,7 @@ const PromptInput = ({ onGenerate, isGenerating, isPlaying }) => {
                 <h3 className="text-sm font-semibold text-gray-700 mb-sm">Sponsors</h3>
                 <textarea
                   className="w-full h-[120px] p-sm bg-transparent border-none text-text font-sans text-base focus:outline-none resize-none"
-                  placeholder="Describe sponsor topics..."
+                  placeholder="Enter sponsors (one per line or comma-separated)..."
                   value={sponsorsPrompt}
                   onChange={(e) => setSponsorsPrompt(e.target.value)}
                 />
@@ -93,7 +139,7 @@ const PromptInput = ({ onGenerate, isGenerating, isPlaying }) => {
                 <h3 className="text-sm font-semibold text-gray-700 mb-sm">My Topics</h3>
                 <textarea
                   className="w-full h-[120px] p-sm bg-transparent border-none text-text font-sans text-base focus:outline-none resize-none"
-                  placeholder="Describe your topics..."
+                  placeholder="Enter topics (one per line or comma-separated)..."
                   value={myTopicsPrompt}
                   onChange={(e) => setMyTopicsPrompt(e.target.value)}
                 />
